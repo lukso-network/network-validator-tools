@@ -18,7 +18,7 @@ builds:
       - arm64
 archives:
   - format: binary
-    name_template: "{{ .Binary }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}-{{ .Mips }}{{ end }}"
+    name_template: "{{ .Binary }}-{{ .Os }}-{{ .Tag }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}-{{ .Mips }}{{ end }}"
 checksum:
   name_template: 'checksums.txt'
 snapshot:
