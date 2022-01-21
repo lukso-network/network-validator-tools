@@ -21,10 +21,24 @@ jobs:
           go-version: 1.16
         id: go
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@master
-        with:
-          version: latest
-          args: release --rm-dist --config ./.github/.goreleaser.yml
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Install dependencies
+      run: |
+        go get -v -t -d ./...
+
+    - name: Run build
+      run: |
+        go build -o network-validator-tools
+
+    - name: Prepare tag name
+      uses: olegtarasov/get-tag@v2.1
+      id: tagName
+
+    - name: Create release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: ${{ steps.tagName.outputs.tag }}
+        draft: false
+        files: |
+          ./network-validator-tools*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
