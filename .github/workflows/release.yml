@@ -1,25 +1,47 @@
-# workflow name
-name: Generate release-artifacts
+name: goreleaser
 
-# on events
 on:
   push:
     tags:
       - "v*"
 
-# workflow tasks
+permissions:
+  contents: write
+  # packages: write
+  # issues: write
+
 jobs:
-  generate:
-    name: Generate cross-platform builds
+  goreleaser:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout the repository
+      - name: Checkout
         uses: actions/checkout@v2
-      - name: Generate build files
-        uses: thatisuday/go-cross-build@v1
         with:
-          platforms: 'linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, windows/amd64, windows/arm64'
-          package: 'lukso-network'
-          name: 'network-validator-tool'
-          compress: 'false'
-          dest: 'dist'
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+        id: go
+
+      - name: Install dependencies
+        run: |
+          go get -v -t -d ./...
+      - name: Run build
+        run: |
+          go build -o network-validator-tools
+      - name: Prepare tag name
+        uses: olegtarasov/get-tag@v2.1
+        id: tagName
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ steps.tagName.outputs.tag }}
+          draft: false
+          files: |
+            ./network-validator-tools*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
