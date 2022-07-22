@@ -1,58 +1,25 @@
-name: goreleaser
+# workflow name
+name: Generate release-artifacts
 
+# on events
 on:
-  push:
-    tags:
-      - "v*"
+  release:
+    types:
+      - created
 
-permissions:
-  contents: write
-  # packages: write
-  # issues: write
-
+# workflow tasks
 jobs:
-  goreleaser:
+  generate:
+    name: Generate cross-platform builds
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        goosarch:
-          - 'darwin/arm64'
-          - 'darwin/amd64'
-          - 'linux/amd64'
-          - 'linux/arm64'
-
     steps:
-      - name: Checkout code
+      - name: Checkout the repository
         uses: actions/checkout@v2
+      - name: Generate build files
+        uses: thatisuday/go-cross-build@v1
         with:
-          fetch-depth: 0
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '1.14'
-      - name: Get OS and arch info
-        run: |
-          GOOSARCH=${{matrix.goosarch}}
-          GOOS=${GOOSARCH%/*}
-          GOARCH=${GOOSARCH#*/}
-          BINARY_NAME=${{github.repository}}-$GOOS-$GOARCH
-          echo "BINARY_NAME=$BINARY_NAME" >> $GITHUB_ENV
-          echo "GOOS=$GOOS" >> $GITHUB_ENV
-          echo "GOARCH=$GOARCH" >> $GITHUB_ENV
-      - name: Install dependencies
-        run: |
-          go get -v -t -d ./...
-      - name: Build
-        run: |
-          go build -o "$BINARY_NAME" -v
-      - name: Release Notes
-        run:
-          git log $(git describe HEAD~ --tags --abbrev=0)..HEAD --pretty='format:* %h %s%n  * %an <%ae>' --no-merges >> ".github/RELEASE-TEMPLATE.md"
-      - name: Release with Notesgit
-        uses: softprops/action-gh-release@v1
-        with:
-          body_path: ".github/RELEASE-TEMPLATE.md"
-          draft: true
-          files: ${{env.BINARY_NAME}}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          platforms: 'linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, windows/amd64, windows/arm64'
+          package: 'lukso-network'
+          name: 'network-validator-tool'
+          compress: 'false'
+          dest: 'dist'
