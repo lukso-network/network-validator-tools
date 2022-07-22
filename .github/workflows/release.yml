@@ -6,7 +6,7 @@ on:
 jobs:
   release:
     name: network validator tools release
-    runs-on: ubuntu-18.04
+    runs-on: macos-latest
     strategy:
       matrix:
         goosarch:
