@@ -1,48 +1,47 @@
-name: LUKSO Network Validator Tool Workflow
+name: goreleaser
+
 on:
   push:
     tags:
-      - "*"
+      - "v*"
+
+permissions:
+  contents: write
+  # packages: write
+  # issues: write
+
 jobs:
-  release:
-    name: network validator tools release
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        goosarch:
-          - 'darwin/arm64'
-          - 'darwin/amd64'
-          - 'linux/amd64'
-          - 'linux/arm64'
+  goreleaser:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
         with:
-          go-version: '1.14'
-      - name: Get OS and arch info
+          go-version: 1.16
+        id: go
+
+      - name: Install dependencies
         run: |
-          GOOSARCH=${{matrix.goosarch}}
-          GOOS=${GOOSARCH%/*}
-          GOARCH=${GOOSARCH#*/}
-          BINARY_NAME=${{github.repository}}-$GOOS-$GOARCH
-          echo "BINARY_NAME=$BINARY_NAME" >> $GITHUB_ENV
-          echo "GOOS=$GOOS" >> $GITHUB_ENV
-          echo "GOARCH=$GOARCH" >> $GITHUB_ENV
-      - name: Build
+          go get -v -t -d ./...
+      - name: Run build
         run: |
-          go build -o "$BINARY_NAME" -v
-      - name: Release Notes
-        run:
-          git log $(git describe HEAD~ --tags --abbrev=0)..HEAD --pretty='format:* %h %s%n  * %an <%ae>' --no-merges >> ".github/RELEASE-TEMPLATE.md"
-      - name: Release with Notes
+          go build -o network-validator-tools
+      - name: Prepare tag name
+        uses: olegtarasov/get-tag@v2.1
+        id: tagName
+
+      - name: Create release
         uses: softprops/action-gh-release@v1
         with:
-          body_path: ".github/RELEASE-TEMPLATE.md"
-          draft: true
-          files: ${{env.BINARY_NAME}}
+          name: ${{ steps.tagName.outputs.tag }}
+          draft: false
+          files: |
+            ./network-validator-tools*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
