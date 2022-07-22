@@ -19,29 +19,15 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.16
-        id: go
-
-      - name: Install dependencies
-        run: |
-          go get -v -t -d ./...
-      - name: Run build
-        run: |
-          go build -o network-validator-tools
-      - name: Prepare tag name
-        uses: olegtarasov/get-tag@v2.1
-        id: tagName
-
-      - name: Create release
-        uses: softprops/action-gh-release@v1
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        if: success() && startsWith(github.ref, 'refs/tags/')
         with:
-          name: ${{ steps.tagName.outputs.tag }}
-          draft: false
-          files: |
-            ./network-validator-tools*
+          version: latest
+          args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
