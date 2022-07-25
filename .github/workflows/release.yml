@@ -1,12 +1,6 @@
 on:
   push:
     tags:
-      - "v*"
-
-jobs:
-on:
-  push:
-    tags:
       - "*"
 jobs:
   release:
