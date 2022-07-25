@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/protolambda/zrnt/eth2/beacon/common"
 	"io/ioutil"
 	"os"
 	"path"
@@ -17,7 +18,6 @@ import (
 	"github.com/google/uuid"
 	hbls "github.com/herumi/bls-eth-go-binary/bls"
 	"github.com/protolambda/go-keystorev4"
-	"github.com/protolambda/zrnt/eth2/beacon"
 	"github.com/protolambda/zrnt/eth2/configs"
 	"github.com/protolambda/zrnt/eth2/util/hashing"
 	"github.com/protolambda/ztyp/tree"
@@ -476,7 +476,7 @@ func createDepositDatasCmd() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			checkErr := makeCheckErr(cmd)
-			var genesisForkVersion beacon.Version
+			var genesisForkVersion common.Version
 			checkErr(genesisForkVersion.UnmarshalText([]byte(forkVersion)), "cannot decode fork version")
 
 			valSeed, err := mnemonicToSeed(validatorsMnemonic)
@@ -495,27 +495,27 @@ func createDepositDatasCmd() *cobra.Command {
 				withdr, err := util.PrivateKeyFromSeedAndPath(withdrSeed, withdrAccPath)
 				checkErr(err, fmt.Sprintf("failed to create withdrawal private key for path %q", withdrAccPath))
 
-				var pub beacon.BLSPubkey
+				var pub common.BLSPubkey
 				copy(pub[:], val.PublicKey().Marshal())
 
-				var withdrPub beacon.BLSPubkey
+				var withdrPub common.BLSPubkey
 				copy(withdrPub[:], withdr.PublicKey().Marshal())
 				withdrCreds := hashing.Hash(withdrPub[:])
-				withdrCreds[0] = configs.Mainnet.BLS_WITHDRAWAL_PREFIX[0]
+				withdrCreds[0] = common.BLS_WITHDRAWAL_PREFIX
 
-				data := beacon.DepositData{
+				data := common.DepositData{
 					Pubkey:                pub,
 					WithdrawalCredentials: withdrCreds,
-					Amount:                beacon.Gwei(amountGwei),
-					Signature:             beacon.BLSSignature{},
+					Amount:                common.Gwei(amountGwei),
+					Signature:             common.BLSSignature{},
 				}
 				msgRoot := data.ToMessage().HashTreeRoot(tree.GetHashFn())
 				checkErr(err, "cannot get validator private key")
 				var secKey hbls.SecretKey
 				checkErr(secKey.Deserialize(val.Marshal()), "cannot convert validator priv key")
 
-				dom := beacon.ComputeDomain(configs.Mainnet.DOMAIN_DEPOSIT, genesisForkVersion, beacon.Root{})
-				msg := beacon.ComputeSigningRoot(msgRoot, dom)
+				dom := common.ComputeDomain(common.DOMAIN_DEPOSIT, genesisForkVersion, common.Root{})
+				msg := common.ComputeSigningRoot(msgRoot, dom)
 				sig := secKey.SignHash(msg[:])
 				copy(data.Signature[:], sig.Serialize())
 
@@ -575,7 +575,7 @@ func createPubkeysCmd() *cobra.Command {
 				valPrivateKey, err := util.PrivateKeyFromSeedAndPath(valSeed, path)
 				checkErr(err, fmt.Sprintf("failed to create validator private key for path %q", path))
 
-				var pub beacon.BLSPubkey
+				var pub common.BLSPubkey
 				copy(pub[:], valPrivateKey.PublicKey().Marshal())
 				cmd.Println(pub.String())
 			}
