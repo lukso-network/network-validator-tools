@@ -4,8 +4,8 @@ on:
       - "v*"
 
 jobs:
-  goreleaser:
-    runs-on: ubuntu-18.04
+  lukso-network-validator-tool:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
