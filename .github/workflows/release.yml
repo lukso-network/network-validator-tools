@@ -1,6 +1,12 @@
 on:
   push:
     tags:
+      - "v*"
+
+jobs:
+on:
+  push:
+    tags:
       - "*"
 jobs:
   release:
@@ -9,8 +15,6 @@ jobs:
     strategy:
       matrix:
         goosarch:
-          - 'darwin/arm64'
-          - 'darwin/amd64'
           - 'linux/amd64'
           - 'linux/arm64'
 
@@ -40,6 +44,7 @@ jobs:
       - name: Release with Notes
         uses: softprops/action-gh-release@v1
         with:
+          body_path: ".github/RELEASE-TEMPLATE.md"
           draft: false
           files: ${{env.BINARY_NAME}}
         env:
