@@ -7,7 +7,7 @@ before:
 builds:
   - id: linux-build
     env:
-      - CGO_ENABLED=1
+      - CGO_ENABLED=0
     goos:
       - linux
     ignore:
@@ -17,7 +17,7 @@ builds:
     ldflags:
       - -s
     env:
-      - CGO_ENABLED=1
+      - CGO_ENABLED=0
       - CC=/home/runner/work/osxcross/target/bin/o64-clang
       - CXX=/home/runner/work/osxcross/target/bin/o64-clang++
     goos:
