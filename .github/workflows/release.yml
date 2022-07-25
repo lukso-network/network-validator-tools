@@ -1,43 +1,40 @@
-name: goreleaser
-
 on:
   push:
     tags:
       - "v*"
 
-permissions:
-  contents: write
-  # packages: write
-  # issues: write
-
 jobs:
   goreleaser:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.16
-      - name: Cache Go modules
-        uses: actions/cache@v1
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      - name: OSXCross for CGO Support
+        id: go
+
+      - name: Install dependencies
         run: |
-          mkdir ../../osxcross
-          git clone https://github.com/plentico/osxcross-target.git ../../osxcross/target
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
-        if: success() && startsWith(github.ref, 'refs/tags/')
+          go get -v -t -d ./...
+      - name: Run build
+        run: |
+          go build -o network-validator-tools
+      - name: Prepare tag name
+        uses: olegtarasov/get-tag@v2.1
+        id: tagName
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
         with:
-          version: latest
-          args: release --rm-dist
+          name: ${{ steps.tagName.outputs.tag }}
+          draft: false
+          files: |
+            ./network-validator-tool*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
