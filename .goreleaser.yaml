@@ -26,16 +26,11 @@ builds:
     goarch:
       - amd64
 archives:
-  - replacements:
-      darwin: Mac
-      linux: Linux
-      #windows: Windows
-      386: 32-bit
-      amd64: 64-bit
+  -
+    format: binary
+    name_template: "{{ .ProjectName }}-{{ .Tag }}-{{ .Os }}-{{ .Arch }}"
 checksum:
   name_template: 'checksums.txt'
-snapshot:
-  name_template: "{{ .Tag }}-next"
 changelog:
   sort: asc
   filters:
