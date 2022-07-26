@@ -31,6 +31,7 @@ jobs:
           echo "GOARCH=$GOARCH" >> $GITHUB_ENV
       - name: Build
         run: |
+          go mod vendor
           GOARCH=$GOARCH go build -o "$BINARY_NAME" -v
       - name: Release Notes
         run:
