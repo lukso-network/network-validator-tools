@@ -14,7 +14,6 @@ builds:
       - linux
     goarch:
       - amd64
-      - arm64
   - id: darwin-build
     ldflags:
       - -s
@@ -26,11 +25,11 @@ builds:
       - darwin
     goarch:
       - amd64
-      - arm64
 archives:
   - replacements:
       darwin: Mac
       linux: Linux
+      #windows: Windows
       386: 32-bit
       amd64: 64-bit
 checksum:
