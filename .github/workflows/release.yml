@@ -10,7 +10,7 @@ jobs:
       matrix:
         goosarch:
           - 'linux/amd64'
-          - 'linux/arm64'
+          - 'darwin/amd64'
 
     steps:
       - name: Checkout code
