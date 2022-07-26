@@ -7,7 +7,6 @@ before:
 builds:
   - id: linux-build
     ldflags:
-      - -X api.mtr.pub/plentico/plenti/cmd.Version={{.Tag}}
       - -extldflags=-static
     env:
       - CGO_ENABLED=1
@@ -15,10 +14,10 @@ builds:
       - linux
     goarch:
       - amd64
+      - arm64
   - id: darwin-build
     ldflags:
       - -s
-      - -X api.mtr.pub/plentico/plenti/cmd.Version={{.Tag}}
     env:
       - CGO_ENABLED=1
       - CC=/home/runner/work/osxcross/target/bin/o64-clang
@@ -27,11 +26,11 @@ builds:
       - darwin
     goarch:
       - amd64
+      - arm64
 archives:
   - replacements:
       darwin: Mac
       linux: Linux
-      #windows: Windows
       386: 32-bit
       amd64: 64-bit
 checksum:
